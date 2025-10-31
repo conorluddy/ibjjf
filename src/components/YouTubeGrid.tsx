@@ -38,30 +38,9 @@ export function YouTubeGrid() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>YouTube Parallel Player</CardTitle>
-            <CardDescription>
-              Load up to 9 YouTube videos in a 3x3 grid. Paste URLs below (one per line).
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              placeholder="Paste YouTube URLs here (one per line)&#10;Example:&#10;https://www.youtube.com/watch?v=dQw4w9WgXcQ&#10;https://youtu.be/dQw4w9WgXcQ&#10;dQw4w9WgXcQ"
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              className="min-h-[120px] font-mono text-sm"
-            />
-            <div className="flex gap-2">
-              <Button onClick={handleLoadVideos}>Load Videos</Button>
-              <Button variant="outline" onClick={handleClear}>Clear</Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8 flex flex-col">
+      <div className="max-w-7xl mx-auto flex-1 flex flex-col gap-6 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
           {videoIds.map((videoId, index) => (
             <Card key={index} className="overflow-hidden">
               <div className="aspect-video bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
@@ -82,6 +61,27 @@ export function YouTubeGrid() {
             </Card>
           ))}
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>YouTube Parallel Player</CardTitle>
+            <CardDescription>
+              Load up to 9 YouTube videos in a 3x3 grid. Paste URLs below (one per line).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              placeholder="Paste YouTube URLs here (one per line)&#10;Example:&#10;https://www.youtube.com/watch?v=dQw4w9WgXcQ&#10;https://youtu.be/dQw4w9WgXcQ&#10;dQw4w9WgXcQ"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              className="min-h-[120px] font-mono text-sm"
+            />
+            <div className="flex gap-2">
+              <Button onClick={handleLoadVideos}>Load Videos</Button>
+              <Button variant="outline" onClick={handleClear}>Clear</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
