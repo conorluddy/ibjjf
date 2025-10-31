@@ -135,7 +135,15 @@ export function YouTubeGrid() {
     }
   }
 
-  const pinnedVideoId = pinnedIndex !== null ? videoIds[pinnedIndex] : null
+  // Reorder videos: pinned first, then others
+  const orderedVideos = pinnedIndex !== null
+    ? [
+        { videoId: videoIds[pinnedIndex], originalIndex: pinnedIndex, isPinned: true },
+        ...videoIds
+          .map((vid, idx) => ({ videoId: vid, originalIndex: idx, isPinned: false }))
+          .filter((_, idx) => idx !== pinnedIndex)
+      ]
+    : videoIds.map((vid, idx) => ({ videoId: vid, originalIndex: idx, isPinned: false }))
 
   return (
     <div className="min-h-screen bg-[#222] p-4 md:p-8 flex flex-col">
@@ -145,47 +153,39 @@ export function YouTubeGrid() {
           Yup Adam and ECJJA!
         </h1>
 
-        {/* Featured Pinned Video */}
-        {pinnedIndex !== null && pinnedVideoId && (
-          <Card className="overflow-hidden border-2 border-blue-500">
-            <div className="aspect-video bg-slate-800 flex items-center justify-center">
-              <div id={`player-${pinnedIndex}`} className="w-full h-full"></div>
-            </div>
-            <div className="p-2 flex justify-center">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePin(pinnedIndex)}
-              >
-                Unpin
-              </Button>
-            </div>
-          </Card>
-        )}
-
         {/* Video Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-          {videoIds.map((videoId, index) => {
-            const isPinned = pinnedIndex === index
-            if (isPinned) {
-              // Show placeholder for pinned video
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {orderedVideos.map((item) => {
+            const { videoId, originalIndex, isPinned } = item
+
+            // Pinned video takes full width
+            if (isPinned && pinnedIndex !== null) {
               return (
-                <Card key={index} className="overflow-hidden opacity-50">
+                <Card key={originalIndex} className="overflow-hidden border-2 border-blue-500 md:col-span-2 lg:col-span-3">
                   <div className="aspect-video bg-slate-800 flex items-center justify-center">
-                    <span className="text-slate-500 text-sm">Pinned Above</span>
+                    <div id={`player-${originalIndex}`} className="w-full h-full"></div>
+                  </div>
+                  <div className="p-2 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePin(originalIndex)}
+                    >
+                      Unpin
+                    </Button>
                   </div>
                 </Card>
               )
             }
 
             return (
-              <Card key={index} className="overflow-hidden">
+              <Card key={originalIndex} className="overflow-hidden">
                 <div className="aspect-video bg-slate-800 flex items-center justify-center">
                   {videoId ? (
-                    <div id={`player-${index}`} className="w-full h-full"></div>
+                    <div id={`player-${originalIndex}`} className="w-full h-full"></div>
                   ) : (
                     <span className="text-slate-500 text-sm">
-                      Slot {index + 1}
+                      Slot {originalIndex + 1}
                     </span>
                   )}
                 </div>
@@ -194,7 +194,7 @@ export function YouTubeGrid() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handlePin(index)}
+                      onClick={() => handlePin(originalIndex)}
                     >
                       Pin
                     </Button>
@@ -207,22 +207,22 @@ export function YouTubeGrid() {
 
         {/* Control Panel */}
         <Card>
-          <CardHeader>
-            <CardTitle>IBJJF Video Grid</CardTitle>
-            <CardDescription>
-              Load up to 9 YouTube videos in a 3x3 grid. Paste URLs below (one per line).
+          <CardHeader className="py-3">
+            <CardTitle className="text-lg">IBJJF Video Grid</CardTitle>
+            <CardDescription className="text-xs">
+              Load up to 9 YouTube videos. Paste URLs below (one per line).
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2 py-3">
             <Textarea
               placeholder="Paste YouTube URLs here (one per line)&#10;Example:&#10;https://www.youtube.com/watch?v=dQw4w9WgXcQ&#10;https://youtu.be/dQw4w9WgXcQ&#10;dQw4w9WgXcQ"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
-              className="min-h-[120px] font-mono text-sm"
+              className="min-h-[60px] font-mono text-xs"
             />
             <div className="flex gap-2">
-              <Button onClick={handleLoadVideos}>Load Videos</Button>
-              <Button variant="outline" onClick={handleClear}>Clear</Button>
+              <Button onClick={handleLoadVideos} size="sm">Load Videos</Button>
+              <Button variant="outline" onClick={handleClear} size="sm">Clear</Button>
             </div>
           </CardContent>
         </Card>
