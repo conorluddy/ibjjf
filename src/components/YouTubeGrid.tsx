@@ -165,24 +165,27 @@ export function YouTubeGrid() {
   return (
     <div className="min-h-screen bg-[#222] p-4 md:p-8 flex flex-col">
       <div className="max-w-7xl mx-auto flex-1 flex flex-col gap-6 w-full">
-        {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-bold text-center text-white">
-          Yup Adam and ECJJA!
-        </h1>
+        {/* Title and Grid Size Selector */}
+        <div className="relative">
+          <h1 className="text-3xl md:text-4xl font-bold text-center text-white">
+            Yup Adam and ECJJA!
+          </h1>
 
-        {/* Grid Size Selector */}
-        <div className="flex justify-center gap-2 flex-wrap">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((cols) => (
-            <Button
-              key={cols}
-              variant={gridColumns === cols ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setGridColumns(cols)}
-              className="w-10 h-10 p-0"
-            >
-              {cols}
-            </Button>
-          ))}
+          {/* Grid Size Selector - Desktop Only */}
+          <div className="hidden lg:flex absolute top-0 right-0 items-center gap-2">
+            <span className="text-sm text-slate-400">Grid size:</span>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((cols) => (
+              <Button
+                key={cols}
+                variant={gridColumns === cols ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setGridColumns(cols)}
+                className="w-8 h-8 p-0 text-xs"
+              >
+                {cols}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* Video Grid */}
