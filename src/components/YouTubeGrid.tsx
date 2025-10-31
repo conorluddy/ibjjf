@@ -52,12 +52,12 @@ export function YouTubeGrid() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4 md:p-8 flex flex-col">
+    <div className="min-h-screen bg-[#222] p-4 md:p-8 flex flex-col">
       <div className="max-w-7xl mx-auto flex-1 flex flex-col gap-6 w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
           {videoIds.map((videoId, index) => (
             <Card key={index} className="overflow-hidden">
-              <div className="aspect-video bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
+              <div className="aspect-video bg-slate-800 flex items-center justify-center">
                 {videoId ? (
                   <iframe
                     src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`}
@@ -67,7 +67,7 @@ export function YouTubeGrid() {
                     className="w-full h-full"
                   />
                 ) : (
-                  <span className="text-slate-400 dark:text-slate-500 text-sm">
+                  <span className="text-slate-500 text-sm">
                     Slot {index + 1}
                   </span>
                 )}
