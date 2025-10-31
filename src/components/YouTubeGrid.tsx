@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,49 +36,179 @@ export function YouTubeGrid() {
     const ids = urls.slice(0, 9).map(url => extractVideoId(url))
     return [...ids, ...Array(9 - ids.length).fill(null)].slice(0, 9)
   })
+  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null)
+  const playersRef = useRef<(YT.Player | null)[]>(Array(9).fill(null))
+  const apiReadyRef = useRef(false)
+
+  // Initialize YouTube API
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !apiReadyRef.current) {
+      // @ts-ignore - YT is loaded via script tag
+      if (window.YT && window.YT.Player) {
+        apiReadyRef.current = true
+      } else {
+        // @ts-ignore
+        window.onYouTubeIframeAPIReady = () => {
+          apiReadyRef.current = true
+        }
+      }
+    }
+  }, [])
+
+  // Create YouTube players when video IDs change
+  useEffect(() => {
+    if (!apiReadyRef.current) return
+
+    const createPlayer = (index: number, videoId: string) => {
+      const elementId = `player-${index}`
+      const element = document.getElementById(elementId)
+      if (!element) return
+
+      // Destroy existing player
+      if (playersRef.current[index]) {
+        playersRef.current[index]?.destroy()
+      }
+
+      // @ts-ignore - YT is loaded via script tag
+      playersRef.current[index] = new window.YT.Player(elementId, {
+        videoId,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+        },
+        events: {
+          onReady: () => {
+            // Players start muted by default
+          },
+        },
+      })
+    }
+
+    // Wait a tick for DOM to update
+    const timer = setTimeout(() => {
+      videoIds.forEach((videoId, index) => {
+        if (videoId && apiReadyRef.current) {
+          createPlayer(index, videoId)
+        }
+      })
+    }, 100)
+
+    return () => {
+      clearTimeout(timer)
+      playersRef.current.forEach(player => player?.destroy())
+      playersRef.current = Array(9).fill(null)
+    }
+  }, [videoIds])
 
   const handleLoadVideos = () => {
     const urls = urlInput.split('\n').filter(line => line.trim())
     const ids = urls.slice(0, 9).map(url => extractVideoId(url))
-
-    // Fill remaining slots with null
     const paddedIds = [...ids, ...Array(9 - ids.length).fill(null)].slice(0, 9)
     setVideoIds(paddedIds)
+    setPinnedIndex(null)
   }
 
   const handleClear = () => {
     setUrlInput('')
     setVideoIds(Array(9).fill(null))
+    setPinnedIndex(null)
   }
+
+  const handlePin = (index: number) => {
+    if (pinnedIndex === index) {
+      // Unpin - mute all
+      setPinnedIndex(null)
+      playersRef.current.forEach(player => player?.mute())
+    } else {
+      // Pin new video - unmute it, mute others
+      setPinnedIndex(index)
+      playersRef.current.forEach((player, i) => {
+        if (i === index) {
+          player?.unMute()
+        } else {
+          player?.mute()
+        }
+      })
+    }
+  }
+
+  const pinnedVideoId = pinnedIndex !== null ? videoIds[pinnedIndex] : null
 
   return (
     <div className="min-h-screen bg-[#222] p-4 md:p-8 flex flex-col">
       <div className="max-w-7xl mx-auto flex-1 flex flex-col gap-6 w-full">
+        {/* Title */}
+        <h1 className="text-3xl md:text-4xl font-bold text-center text-white">
+          Yup Adam and ECJJA!
+        </h1>
+
+        {/* Featured Pinned Video */}
+        {pinnedIndex !== null && pinnedVideoId && (
+          <Card className="overflow-hidden border-2 border-blue-500">
+            <div className="aspect-video bg-slate-800 flex items-center justify-center">
+              <div id={`player-${pinnedIndex}`} className="w-full h-full"></div>
+            </div>
+            <div className="p-2 flex justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handlePin(pinnedIndex)}
+              >
+                Unpin
+              </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Video Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 flex-1">
-          {videoIds.map((videoId, index) => (
-            <Card key={index} className="overflow-hidden">
-              <div className="aspect-video bg-slate-800 flex items-center justify-center">
-                {videoId ? (
-                  <iframe
-                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`}
-                    title={`YouTube video ${index + 1}`}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="w-full h-full"
-                  />
-                ) : (
-                  <span className="text-slate-500 text-sm">
-                    Slot {index + 1}
-                  </span>
+          {videoIds.map((videoId, index) => {
+            const isPinned = pinnedIndex === index
+            if (isPinned) {
+              // Show placeholder for pinned video
+              return (
+                <Card key={index} className="overflow-hidden opacity-50">
+                  <div className="aspect-video bg-slate-800 flex items-center justify-center">
+                    <span className="text-slate-500 text-sm">Pinned Above</span>
+                  </div>
+                </Card>
+              )
+            }
+
+            return (
+              <Card key={index} className="overflow-hidden">
+                <div className="aspect-video bg-slate-800 flex items-center justify-center">
+                  {videoId ? (
+                    <div id={`player-${index}`} className="w-full h-full"></div>
+                  ) : (
+                    <span className="text-slate-500 text-sm">
+                      Slot {index + 1}
+                    </span>
+                  )}
+                </div>
+                {videoId && (
+                  <div className="p-2 flex justify-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handlePin(index)}
+                    >
+                      Pin
+                    </Button>
+                  </div>
                 )}
-              </div>
-            </Card>
-          ))}
+              </Card>
+            )
+          })}
         </div>
 
+        {/* Control Panel */}
         <Card>
           <CardHeader>
-            <CardTitle>YouTube Parallel Player</CardTitle>
+            <CardTitle>IBJJF Video Grid</CardTitle>
             <CardDescription>
               Load up to 9 YouTube videos in a 3x3 grid. Paste URLs below (one per line).
             </CardDescription>
