@@ -19,9 +19,23 @@ function extractVideoId(url: string): string | null {
   return null
 }
 
+const DEFAULT_URLS = `https://www.youtube.com/watch?v=S0qzrYXn7Sw
+https://www.youtube.com/watch?v=U235YxnIVJY
+https://www.youtube.com/watch?v=LKLZnWfVbhY
+https://www.youtube.com/watch?v=qOXZQfMum8M
+https://www.youtube.com/watch?v=oCFhj7znXqQ
+https://www.youtube.com/watch?v=fFu9rMKVUWk
+https://www.youtube.com/watch?v=y4sVsAGadqM
+https://www.youtube.com/watch?v=UH-ruQEyg8o
+https://www.youtube.com/watch?v=Yuyxq7YFcAY`
+
 export function YouTubeGrid() {
-  const [urlInput, setUrlInput] = useState('')
-  const [videoIds, setVideoIds] = useState<(string | null)[]>(Array(9).fill(null))
+  const [urlInput, setUrlInput] = useState(DEFAULT_URLS)
+  const [videoIds, setVideoIds] = useState<(string | null)[]>(() => {
+    const urls = DEFAULT_URLS.split('\n').filter(line => line.trim())
+    const ids = urls.slice(0, 9).map(url => extractVideoId(url))
+    return [...ids, ...Array(9 - ids.length).fill(null)].slice(0, 9)
+  })
 
   const handleLoadVideos = () => {
     const urls = urlInput.split('\n').filter(line => line.trim())
