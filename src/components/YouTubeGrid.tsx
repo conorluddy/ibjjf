@@ -37,6 +37,7 @@ export function YouTubeGrid() {
     return [...ids, ...Array(9 - ids.length).fill(null)].slice(0, 9)
   })
   const [pinnedIndex, setPinnedIndex] = useState<number | null>(null)
+  const [gridColumns, setGridColumns] = useState(3)
   const playersRef = useRef<(YT.Player | null)[]>(Array(9).fill(null))
   const apiReadyRef = useRef(false)
 
@@ -145,6 +146,22 @@ export function YouTubeGrid() {
       ]
     : videoIds.map((vid, idx) => ({ videoId: vid, originalIndex: idx, isPinned: false }))
 
+  // Generate dynamic grid class based on column count
+  const getGridClass = () => {
+    const colClasses: Record<number, string> = {
+      1: 'grid-cols-1',
+      2: 'grid-cols-1 md:grid-cols-2',
+      3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+      4: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+      5: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-5',
+      6: 'grid-cols-1 md:grid-cols-3 lg:grid-cols-6',
+      7: 'grid-cols-1 md:grid-cols-4 lg:grid-cols-7',
+      8: 'grid-cols-1 md:grid-cols-4 lg:grid-cols-8',
+      9: 'grid-cols-1 md:grid-cols-5 lg:grid-cols-9',
+    }
+    return colClasses[gridColumns] || colClasses[3]
+  }
+
   return (
     <div className="min-h-screen bg-[#222] p-4 md:p-8 flex flex-col">
       <div className="max-w-7xl mx-auto flex-1 flex flex-col gap-6 w-full">
@@ -153,15 +170,31 @@ export function YouTubeGrid() {
           Yup Adam and ECJJA!
         </h1>
 
+        {/* Grid Size Selector */}
+        <div className="flex justify-center gap-2 flex-wrap">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((cols) => (
+            <Button
+              key={cols}
+              variant={gridColumns === cols ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGridColumns(cols)}
+              className="w-10 h-10 p-0"
+            >
+              {cols}
+            </Button>
+          ))}
+        </div>
+
         {/* Video Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className={`grid ${getGridClass()} gap-4`}>
           {orderedVideos.map((item) => {
             const { videoId, originalIndex, isPinned } = item
 
             // Pinned video takes full width
             if (isPinned && pinnedIndex !== null) {
+              const colSpanClass = `col-span-full`
               return (
-                <Card key={originalIndex} className="overflow-hidden border-2 border-blue-500 md:col-span-2 lg:col-span-3">
+                <Card key={originalIndex} className={`overflow-hidden border-2 border-blue-500 ${colSpanClass}`}>
                   <div className="aspect-video bg-slate-800 flex items-center justify-center">
                     <div id={`player-${originalIndex}`} className="w-full h-full"></div>
                   </div>
