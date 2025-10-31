@@ -60,7 +60,7 @@ export function YouTubeGrid() {
               <div className="aspect-video bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
                 {videoId ? (
                   <iframe
-                    src={`https://www.youtube.com/embed/${videoId}`}
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`}
                     title={`YouTube video ${index + 1}`}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
